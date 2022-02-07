@@ -8,7 +8,7 @@ import com.backend.qcmplus.repository.ReponseRepository;
 import com.backend.qcmplus.service.QuestionService;
 import com.backend.qcmplus.service.QuestionnaireService;
 import com.backend.qcmplus.service.UtilisateurService;
-import com.backend.qcmplus.utils.UserNotFoundException;
+import com.backend.qcmplus.utils.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -96,13 +96,13 @@ public class AdminController {
     /**
      * @param id a Long object referencing the id of a user retrieved by the front-end
      * @return the user associated with the id passed in parameters
-     * @throws UserNotFoundException a specific exception thrown when the user's id is not present in the database
+     * @throws ObjectNotFoundException a specific exception thrown when the user's id is not present in the database
      */
     @GetMapping("/users/{id}")
-    Mono<Utilisateur> findOne(@PathVariable Long id) throws UserNotFoundException {
+    Mono<Utilisateur> findOne(@PathVariable Long id) throws ObjectNotFoundException {
         Optional<Utilisateur> foundUser = utilisateurService.getUtilisateur(id);
         if (foundUser.isEmpty())
-            throw new UserNotFoundException(id);
+            throw new ObjectNotFoundException(id);
         return Mono.just(foundUser.get());
     }
 
