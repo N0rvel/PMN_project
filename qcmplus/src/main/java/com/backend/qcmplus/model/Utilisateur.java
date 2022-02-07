@@ -1,12 +1,11 @@
 package com.backend.qcmplus.model;
 
-import java.io.Serializable;
-
-import javax.persistence.*;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "Utilisateur")
