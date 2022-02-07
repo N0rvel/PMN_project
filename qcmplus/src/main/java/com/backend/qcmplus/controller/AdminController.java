@@ -17,12 +17,14 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import javax.transaction.Transactional;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This class references all the methods authorized for a user with the role of ADMIN.
+ */
 @RestController
 @RequestMapping("/admin/rest")
 public class AdminController {
@@ -42,7 +44,10 @@ public class AdminController {
     @Autowired
     private ReponseRepository reponseRepository;
 
-    // Save
+    /**
+     * @param newUser a User object with attributes given by the front
+     * @return an HTTP Status CREATED if the creation of a new user is successful
+     */
     @Transactional
     @PreAuthorize("hasAnyRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
@@ -54,6 +59,11 @@ public class AdminController {
         return Mono.just(utilisateurService.saveUser(newUser));
     }
 
+    /**
+     * @param newUser a User object with attributes given by the front
+     * @return an HTTP Status CREATED if the creation of a new user is successful
+     * @throws Exception a general exception giving the information that this login already exists
+     */
     @PostMapping("/user")
     HttpStatus newUser(@RequestBody Utilisateur newUser) throws Exception {
         if ("".equals(newUser.getPassword()) || newUser.getPassword() == null) {
@@ -74,14 +84,20 @@ public class AdminController {
 
     }
 
-    // Find
+    /**
+     * @return a list of all the users presents in the database
+     */
     @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/users")
     Mono<List<Utilisateur>> findAll() {
         return Mono.just(utilisateurService.listAllUser());
     }
 
-    // Find
+    /**
+     * @param id a Long object referencing the id of a user retrieved by the front-end
+     * @return the user associated with the id passed in parameters
+     * @throws UserNotFoundException a specific exception thrown when the user's id is not present in the database
+     */
     @GetMapping("/users/{id}")
     Mono<Utilisateur> findOne(@PathVariable Long id) throws UserNotFoundException {
         Optional<Utilisateur> foundUser = utilisateurService.getUtilisateur(id);
@@ -90,7 +106,11 @@ public class AdminController {
         return Mono.just(foundUser.get());
     }
 
-    // Save or update
+    /**
+     * @param newUser a User object with attributes given by the front
+     * @param id      a Long object referencing the id of a user retrieved by the front-end
+     * @return the user associated with the id passed in parameters with its updated attributes
+     */
     @PutMapping("/users/{id}")
     Mono<Utilisateur> saveOrUpdate(@RequestBody Utilisateur newUser, @PathVariable Long id) {
         Optional<Utilisateur> foundUser = utilisateurService.getUtilisateur(id);
@@ -110,14 +130,18 @@ public class AdminController {
         });
     }
 
+    /**
+     * @param id a Long object referencing the id of a user retrieved by the front-end
+     */
     @GetMapping("/user/{id}")
     void deleteUtilisateur(@PathVariable Long id) {
         utilisateurService.deleteUtilisateur(id);
     }
 
-    // Save Survey
-    // return 201 instead of 200
-    // @ResponseStatus(HttpStatus.CREATED)
+    /**
+     * @param newSurvey a Survey object with attributes given by the front
+     * @return an HTTP Status CREATED if the creation of a new survey is successful
+     */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/survey")
     Mono<Questionnaire> newSurvey(@RequestBody Questionnaire newSurvey) {
@@ -128,30 +152,36 @@ public class AdminController {
         return Mono.just(surveyService.saveSurvey(newSurvey));
     }
 
-    // Get all surveys
+    /**
+     * @return an HTTP Status OK when the method of getting all the surveys is successful
+     */
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/surveys")
     Mono<List<Questionnaire>> findAllSurveys() {
         return Mono.just((surveyService.listAllSurvey()));
     }
 
-    // Save Question
-    // return 201 instead of 200
-    // @ResponseStatus(HttpStatus.CREATED)
+    /**
+     * @param newQuestion a Question object with attributes given by the front
+     * @return an HTTP Status CREATED if the creation of a new question is successful
+     */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/question")
     @Transactional
     Mono<Question> newQuestion(@RequestBody Question newQuestion) {
-
-
         Question question = questionService.saveQuestion(newQuestion);
-        for (Reponse reponse : question.getReponses()){
+        for (Reponse reponse : question.getReponses()) {
             reponse.setQuestion(question);
         }
         return Mono.just(questionService.saveQuestion(question));
     }
 
-    // Save or update Question
+    /**
+     * @param newQuestion a Question object with attributes given by the front
+     * @param id          a Long object retrieved in the front referencing the question's id
+     * @return an HTTP Status OK when the method of updating the question is successful
+     */
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/question/{id}")
     Mono<Question> saveOrUpdateQuestion(@RequestBody Question newQuestion, @PathVariable Long id) {
         Optional<Question> foundQuestion = questionService.findById(id);
@@ -168,14 +198,22 @@ public class AdminController {
         });
     }
 
-    // Get Survey Question
-    // return 201 instead of 200
+    /**
+     * @param id a Long object retrieved in the front referencing the question's id
+     * @return an HTTP Status OK when the method of getting all questions of a survey is successful
+     */
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/survey/{id}/question")
     Mono<List<Question>> getAllQuestion(@PathVariable long id) {
         return Mono.just(surveyService.listAllQuestion(id));
     }
 
-    // Save or update Survey
+    /**
+     * @param newSurvey a Survey object with attributes given by the front
+     * @param id a Long object retrieved in the front referencing the survey's id
+     * @return an HTTP Status OK when the method of updating the survey is successful
+     */
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/survey/{id}")
     Mono<Questionnaire> saveOrUpdateSurvey(@RequestBody Questionnaire newSurvey, @PathVariable Long id) {
         Optional<Questionnaire> foundSurvey = surveyService.findById(id);
@@ -193,11 +231,17 @@ public class AdminController {
         });
     }
 
+    /**
+     * @param id a Long object retrieved in the front referencing the survey's id
+     */
     @GetMapping("/survey/{id}")
     void deleteSurvey(@PathVariable Long id) {
         surveyService.deleteSurvey(id);
     }
 
+    /**
+     * @param id a Long object retrieved in the front referencing the question's id
+     */
     @GetMapping("/question/{id}")
     void deleteQuestion(@PathVariable Long id) {
         questionService.deleteQuestion(id);
